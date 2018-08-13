@@ -1,19 +1,3 @@
-"""
-Copyright 2018 Anand Kumar
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not 
-use this file except in compliance with the License. You may obtain a copy 
-of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
-License for the specific language governing permissions and limitations 
-under the License. 
-"""
-
 from textwrap import dedent
 from uuid import uuid4
 from flask import Flask, jsonify, request
@@ -48,7 +32,7 @@ def mine():
 
     return jsonify(response), 201
 
-@api.route('/transact', methods=['POST'])
+@api.route('/transactions/new', methods=['POST'])
 def new_transaction():
     body = request.get_json()
     required_params = ['sender', 'receiver', 'amount']
