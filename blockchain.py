@@ -16,15 +16,76 @@ under the License.
 
 import hashlib
 import json
+import requests
 from time import time
 from uuid import uuid4
+from urllib.parse import urlparse
 
 class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.current_transactions = []
+        self.neighbors = set()
 
         self.add_block(prev_hash = 1, proof = 100)
+
+    def add_neighbor(self, address):
+        """
+        Adds a new node to the list of neighbors
+
+        :param address: <str> address of the new neighbor
+        """
+        url = urlparse(address)
+        self.neighbors.add(url.netloc)
+
+    def is_valid_chain(self, chain):
+        """
+        Determines a given blockchain is valid
+
+        :param chain: <list> a blockchain
+        :return: <bool> true if valid, false otherwise
+        """
+        block_ptr = chain[0]
+        current_index = 1
+        while current_index < len(chain):
+            curr_block = chain[current_index]
+
+            if curr_block['prev_hash'] != self.hash(block_ptr):
+                return False
+            
+            if self.is_valid_proof(block_ptr['proof'], curr_block['proof']):
+                return False
+
+            block_ptr = curr_block
+            current_index += 1
+        return True
+
+    def resolve(self):
+        """
+        Replaces chain with longest one in the network.
+
+        :return: <bool> true if the chain is replaced, false otherwise
+        """
+        curr_neighbors = self.neighbors
+        result = None
+
+        min_length = len(self.chain)
+
+        for neighbor in curr_neighbors:
+            response = requests.get(f'http://{neighbor}/chain')
+
+            if response.status_code == 200:
+                length = response.json()['length']
+                chain = response.json()['chain']
+
+                if length > min_length and self.valid_chain(chain):
+                    min_length = length
+                    result = chain
+
+        if result:
+            self.chain = result
+            return True
+        return False
 
     def add_block(self, proof, prev_hash = None):
         """

@@ -56,7 +56,7 @@ def new_transaction():
     try:
         if not all(e in body for e in required_params):
             return 
-                'Missing parameters - include: sender, receiver, amount', 400
+            'Missing parameters - include: sender, receiver, amount', 400
     except TypeError:
         return 'Missing parameters - include: sender, receiver, amount', 400
 
@@ -73,6 +73,40 @@ def chain():
         'chain': blockchain.chain,
         'length': len(blockchain.chain)
     }
+    return jsonify(response), 200
+
+@api.route('/neighbors/register', methods=['POST'])
+def register_neighbors():
+    body = request.get_json()
+
+    try:
+        neighbors = body['neighbors']
+        if neighbors is None:
+            return 'Missing valid list of neighbors', 400
+    except TypeError:
+        return 'Missing valid list of neighbors', 400
+
+    for neighbor in neighbors:
+        blockchain.add_neighbor(neighbor)
+
+    response = {
+        'message': 'New neighbors have been added',
+        'total_neighbors': list(blockchain.neighbors)
+    }
+    return jsonify(response), 201
+
+@api.route('/neighbors/resolve', methods=['GET'])
+def reach_consensus():
+    is_chain_replaced = blockchain.resolve()
+
+    response = {
+        'chain': blockchain.chain
+    }
+
+    if is_chain_replaced:
+        response['message'] = 'Chain has been replaced!'
+    else:
+        response['message'] = 'Chain is authoritative'
     return jsonify(response), 200
 
 if __name__ == '__main__':

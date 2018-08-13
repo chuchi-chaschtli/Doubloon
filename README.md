@@ -8,5 +8,5 @@ Doubloon is a simple blockchain protocol which is wrapped using Flask, a robust 
 
 ### To-Do
 - [x] Proof of Work implementation
-- [ ] Consensus Algorithm
+- [x] Consensus Algorithm
 - [ ] Transaction Validation
