@@ -30,16 +30,16 @@ blockchain = blockchain.Blockchain()
 @api.route('/mine', methods=['GET'])
 def mine():
     last_blk = blockchain.last_block
-    last_proof = last_blk['proof']
+    last_proof = last_blk.proof
     proof = blockchain.proof_of_work(last_proof)
 
     blockchain.add_transaction(sender='0', receiver=node_uid, amt=1)
 
-    prev_hash = blockchain.hash(last_blk)
+    prev_hash = last_blk.hash()
     blk = blockchain.add_block(proof, prev_hash)
 
     response = {
-        'message': 'New block forged!',
+        'message': 'New block mined!',
         'index': blk['index'],
         'transactions': blk['transactions'],
         'proof': blk['proof'],
@@ -69,8 +69,11 @@ def new_transaction():
 
 @api.route('/chain', methods=['GET'])
 def chain():
+    chain = []
+    for block in blockchain.chain:
+        chain.append(block.to_dict())
     response = {
-        'chain': blockchain.chain,
+        'chain': chain,
         'length': len(blockchain.chain)
     }
     return jsonify(response), 200
@@ -98,9 +101,12 @@ def register_neighbors():
 @api.route('/neighbors/resolve', methods=['GET'])
 def reach_consensus():
     is_chain_replaced = blockchain.resolve()
+    chain = []
+    for block in blockchain.chain:
+        chain.append(block.to_dict())
 
     response = {
-        'chain': blockchain.chain
+        'chain': chain
     }
 
     if is_chain_replaced:

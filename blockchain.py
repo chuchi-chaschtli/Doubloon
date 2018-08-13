@@ -15,11 +15,11 @@ under the License.
 """
 
 import hashlib
-import json
 import requests
-from time import time
 from uuid import uuid4
 from urllib.parse import urlparse
+
+from block import Block
 
 class Blockchain(object):
     def __init__(self):
@@ -37,18 +37,16 @@ class Blockchain(object):
         :param prev_hash: (Optional) <str> previous block hash
         :return: <dict> representation of the new block
         """
-        new_block = {
-            'index': len(self.chain) + 1,
-            'timestamp': time(),
-            'transactions': self.current_transactions,
-            'proof': proof,
-            'prev_hash': prev_hash or self.hash(self.chain[-1])
-        }
+        new_block = Block(
+            len(self.chain) + 1, 
+            self.current_transactions, 
+            proof, 
+            prev_hash or self.chain[-1].hash())
 
         self.current_transactions = []
 
         self.chain.append(new_block)
-        return new_block
+        return new_block.to_dict()
 
     def add_transaction(self, sender, receiver, amt):
         """
@@ -64,7 +62,7 @@ class Blockchain(object):
             'receiver': receiver, 
             'amount': amt
         })
-        return self.last_block['index'] + 1
+        return self.last_block.index + 1
 
     def add_neighbor(self, address):
         """
@@ -87,10 +85,10 @@ class Blockchain(object):
         while current_index < len(chain):
             curr_block = chain[current_index]
 
-            if curr_block['prev_hash'] != self.hash(block_ptr):
+            if curr_block.prev_hash != block_ptr.hash():
                 return False
             
-            if self.is_valid_proof(block_ptr['proof'], curr_block['proof']):
+            if self.is_valid_proof(block_ptr.proof, curr_block.proof):
                 return False
 
             block_ptr = curr_block
@@ -151,17 +149,6 @@ class Blockchain(object):
         guess = f'{prev}{curr}'.encode()
         hash_guess = hashlib.sha256(guess).hexdigest()
         return hash_guess[-4:] == '0000'
-
-    @staticmethod
-    def hash(block):
-        """
-        Creates an SHA-256 block hash
-
-        :param block: <dict> block
-        :return: <str> hash
-        """
-        block_json = json.dumps(block, sort_keys=True)
-        return hashlib.sha256(block_json.encode()).hexdigest()
 
     @property
     def last_block(self):
