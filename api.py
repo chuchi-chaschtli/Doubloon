@@ -100,4 +100,16 @@ def reach_consensus():
     return jsonify(response), 200
 
 if __name__ == '__main__':
-    api.run(host='0.0.0.0', port=5000)
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(description='Blockchain command line')
+    parser.add_argument(
+        '-p', 
+        '--port', 
+        default=8081, 
+        type=int, 
+        help='port to run service')
+    args = parser.parse_args()
+    port = args.port
+
+    api.run(host='0.0.0.0', port=port)
