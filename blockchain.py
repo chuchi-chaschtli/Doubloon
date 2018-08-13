@@ -29,6 +29,43 @@ class Blockchain(object):
 
         self.add_block(prev_hash = 1, proof = 100)
 
+    def add_block(self, proof, prev_hash = None):
+        """
+        Creates a new block in the chain.
+
+        :param proof: <int> proof passed by the PoW algorithm.
+        :param prev_hash: (Optional) <str> previous block hash
+        :return: <dict> representation of the new block
+        """
+        new_block = {
+            'index': len(self.chain) + 1,
+            'timestamp': time(),
+            'transactions': self.current_transactions,
+            'proof': proof,
+            'prev_hash': prev_hash or self.hash(self.chain[-1])
+        }
+
+        self.current_transactions = []
+
+        self.chain.append(new_block)
+        return new_block
+
+    def add_transaction(self, sender, receiver, amt):
+        """
+        Constructs a new transaction to proceed to next mined Block.
+
+        :param sender: <str> address of the Sender
+        :param receiver: <str> address of the Receiver
+        :param amt: <double> transaction amount
+        :return: <index> block index to hold this transaction
+        """
+        self.current_transactions.append({
+            'sender': sender, 
+            'receiver': receiver, 
+            'amount': amt
+        })
+        return self.last_block['index'] + 1
+
     def add_neighbor(self, address):
         """
         Adds a new node to the list of neighbors
@@ -86,43 +123,6 @@ class Blockchain(object):
             self.chain = result
             return True
         return False
-
-    def add_block(self, proof, prev_hash = None):
-        """
-        Creates a new block in the chain.
-
-        :param proof: <int> proof passed by the PoW algorithm.
-        :param prev_hash: (Optional) <str> previous block hash
-        :return: <dict> representation of the new block
-        """
-        new_block = {
-            'index': len(self.chain) + 1,
-            'timestamp': time(),
-            'transactions': self.current_transactions,
-            'proof': proof,
-            'prev_hash': prev_hash or self.hash(self.chain[-1])
-        }
-
-        self.current_transactions = []
-
-        self.chain.append(new_block)
-        return new_block
-
-    def add_transaction(self, sender, receiver, amt):
-        """
-        Constructs a new transaction to proceed to next mined Block.
-
-        :param sender: <str> address of the Sender
-        :param receiver: <str> address of the Receiver
-        :param amt: <double> transaction amount
-        :return: <index> block index to hold this transaction
-        """
-        self.current_transactions.append({
-            'sender': sender, 
-            'receiver': receiver, 
-            'amount': amt
-        })
-        return self.last_block['index'] + 1
 
     def proof_of_work(self, prev):
         """
