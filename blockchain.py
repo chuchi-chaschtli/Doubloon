@@ -102,7 +102,7 @@ class Blockchain(object):
                 length = response.json()['length']
                 chain = response.json()['chain']
 
-                if length > min_length and self.valid_chain(chain):
+                if length > min_length and self.is_valid_chain(chain):
                     min_length = length
                     result = chain
 
