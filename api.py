@@ -2,7 +2,12 @@ from textwrap import dedent
 from uuid import uuid4
 from flask import Flask, jsonify, request
 
+import Crypto.Random
+from Crypto.PublicKey import RSA
+from binascii import hexlify
+
 import blockchain
+import constant
 
 # Node instantiation
 api = Flask(__name__)
@@ -17,7 +22,11 @@ def mine():
     last_proof = last_blk.proof
     proof = blockchain.proof_of_work(last_proof)
 
-    blockchain.add_transaction(sender='0', receiver=node_uid, amt=1)
+    blockchain.add_transaction(
+        constant.MINER_KEY, 
+        node_uid, 
+        constant.MINER_REWARD, 
+        "")
 
     prev_hash = last_blk.hash()
     blk = blockchain.add_block(proof, prev_hash)
@@ -35,21 +44,26 @@ def mine():
 @api.route('/transactions/new', methods=['POST'])
 def new_transaction():
     body = request.get_json()
-    required_params = ['sender', 'receiver', 'amount']
+    required_params = ['sender', 'receiver', 'amount', 'signature']
 
     try:
         if not all(e in body for e in required_params):
-            return 
-            'Missing parameters - include: sender, receiver, amount', 400
+            return 'Missing parameters', 400
     except TypeError:
-        return 'Missing parameters - include: sender, receiver, amount', 400
+        return 'Missing parameters', 400
 
-    index = blockchain.add_transaction(
+    result = blockchain.add_transaction(
         body['sender'], 
         body['receiver'], 
-        body['amount'])
-    response = {'message': f'Transaction will be appended to block {index}'}
-    return jsonify(response), 201
+        body['amount'],
+        body['signature'])
+    if result < 0:
+        response = {'message': 'Invalid transaction'}
+        return jsonify(response), 406
+    else:
+        response = {'message': 
+                    f'Transaction will be appended to block {result}'}
+        return jsonify(response), 201
 
 @api.route('/chain', methods=['GET'])
 def chain():
@@ -98,6 +112,20 @@ def reach_consensus():
     else:
         response['message'] = 'Chain is authoritative'
     return jsonify(response), 200
+
+@api.route('/wallet/new', methods=['GET'])
+def new_wallet():
+    rng = Crypto.Random.new().read
+    priv_key = RSA.generate(1024, rng)
+    publ_key = priv_key.publickey()
+    response = {
+        'message': 'Notice: Save these keys!!!',
+        'private_key': hexlify(priv_key.exportKey(format='DER')).decode(
+            'utf8'),
+        'public_key': hexlify(publ_key.exportKey(format='DER')).decode(
+            'utf8')
+    }
+    return jsonify(response), 201
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

@@ -3,6 +3,8 @@ import requests
 from uuid import uuid4
 from urllib.parse import urlparse
 
+import constant
+from transaction import Transaction
 from block import Block
 
 class Blockchain(object):
@@ -32,21 +34,24 @@ class Blockchain(object):
         self.chain.append(new_block)
         return new_block.to_dict()
 
-    def add_transaction(self, sender, receiver, amt):
+    def add_transaction(self, sender, receiver, amount, signature):
         """
         Constructs a new transaction to proceed to next mined Block.
 
-        :param sender: <str> address of the Sender
-        :param receiver: <str> address of the Receiver
-        :param amt: <double> transaction amount
+        :param sender: <str> address key of the sender
+        :param receiver: <str> address key of the receiver
+        :param amount: <int> transaction amount
+        :param signature: the private key signature of the sender
         :return: <index> block index to hold this transaction
         """
-        self.current_transactions.append({
-            'sender': sender, 
-            'receiver': receiver, 
-            'amount': amt
-        })
-        return self.last_block.index + 1
+        transaction = Transaction(sender, receiver, amount)
+
+        if sender == constant.MINER_KEY or transaction.verify_signature(
+            signature):
+            self.current_transactions.append(transaction.to_dict())
+            return self.last_block.index + 1
+
+        return -1
 
     def add_neighbor(self, address):
         """
