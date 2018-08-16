@@ -10,6 +10,7 @@ class Block(object):
         self.proof = proof
         self.prev_hash = prev_hash
 
+    @property
     def hash(self):
         """
         Creates an SHA-256 block hash
@@ -17,10 +18,11 @@ class Block(object):
         :param block: <dict> block
         :return: <str> hash
         """
-        block_json = json.dumps(self.to_dict(), sort_keys=True)
+        block_json = json.dumps(self.dict, sort_keys=True)
         return hashlib.sha256(block_json.encode()).hexdigest()
 
-    def to_dict(self):
+    @property
+    def dict(self):
         """
         Grabs a json-friendly representation of the block
 

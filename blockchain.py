@@ -27,12 +27,12 @@ class Blockchain(object):
             len(self.chain) + 1, 
             self.current_transactions, 
             proof, 
-            prev_hash or self.chain[-1].hash())
+            prev_hash or self.chain[-1].hash)
 
         self.current_transactions = []
 
         self.chain.append(new_block)
-        return new_block.to_dict()
+        return new_block.dict
 
     def add_transaction(self, sender, receiver, amount, signature):
         """
@@ -48,7 +48,7 @@ class Blockchain(object):
 
         if sender == constant.MINER_KEY or transaction.verify_signature(
             signature):
-            self.current_transactions.append(transaction.to_dict())
+            self.current_transactions.append(transaction.dict)
             return self.last_block.index + 1
 
         return -1
@@ -79,7 +79,7 @@ class Blockchain(object):
         while current_index < len(chain):
             curr_block = chain[current_index]
 
-            if curr_block.prev_hash != block_ptr.hash():
+            if curr_block.prev_hash != block_ptr.hash:
                 return False
             
             if self.is_valid_proof(block_ptr.proof, curr_block.proof):
@@ -93,7 +93,8 @@ class Blockchain(object):
         """
         Replaces chain with longest one in the network.
 
-        :return: <bool> true if the chain is replaced, false otherwise
+        :return: <bool> true if the current chain is replaced, false if the 
+        chain is authoritative
         """
         curr_peers = self.peers
         result = None
@@ -125,22 +126,22 @@ class Blockchain(object):
         :param prev: <int> the previous proof
         :return: <int> the current proof
         """
-        curr = 0
-        while not self.is_valid_proof(prev, curr):
-            curr += 1
-        return curr
+        nonce = 0
+        while not self.is_valid_proof(prev, nonce):
+            nonce += 1
+        return nonce
 
     @staticmethod
-    def is_valid_proof(prev, curr):
+    def is_valid_proof(prev, nonce):
         """
         Validates a proof by checking if the hash of the previous and the 
         current contain 4 trailing zeros
 
         :param prev: <int> previous proof
-        :param curr: <int> current proof
+        :param nonce: <int> current proof
         :return: <bool> True if correct, false otherwise
         """
-        guess = f'{prev}{curr}'.encode()
+        guess = f'{prev}{nonce}'.encode()
         hash_guess = hashlib.sha256(guess).hexdigest()
         return hash_guess[-4:] == '0000'
 

@@ -11,13 +11,6 @@ class Transaction(object):
         self.receiver = receiver
         self.amount = amount
 
-    def to_dict(self):
-        return {
-            'sender': self.sender,
-            'receiver': self.receiver,
-            'amount': self.amount
-        }
-
     def verify_signature(self, signature):
         """
         Verifies the provided signature corresponds to the transaction 
@@ -33,7 +26,15 @@ class Transaction(object):
         verifier = PKCS1_v1_5.new(public_key)
 
         digest = SHA256.new()
-        digest.update(str(self.to_dict()).encode('utf8'))
+        digest.update(str(self.dict).encode('utf8'))
         sig = signer.sign(digest)
 
         return verifier.verify(digest, sig)
+
+    @property
+    def dict(self):
+        return {
+            'sender': self.sender,
+            'receiver': self.receiver,
+            'amount': self.amount
+        }

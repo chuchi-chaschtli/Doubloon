@@ -28,7 +28,7 @@ def mine():
         constant.MINER_REWARD, 
         "")
 
-    prev_hash = last_blk.hash()
+    prev_hash = last_blk.hash
     blk = blockchain.add_block(proof, prev_hash)
 
     response = {
@@ -74,7 +74,7 @@ def new_transaction():
 def get_chain():
     chain = []
     for block in blockchain.chain:
-        chain.append(block.to_dict())
+        chain.append(block.dict)
     response = {
         'chain': chain,
         'length': len(blockchain.chain)
@@ -110,7 +110,7 @@ def reach_consensus():
     is_chain_replaced = blockchain.resolve()
     chain = []
     for block in blockchain.chain:
-        chain.append(block.to_dict())
+        chain.append(block.dict)
 
     response = {
         'chain': chain
