@@ -11,7 +11,7 @@ class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.current_transactions = []
-        self.neighbors = set()
+        self.peers = set()
 
         self.add_block(prev_hash = 1, proof = 100)
 
@@ -53,19 +53,19 @@ class Blockchain(object):
 
         return -1
 
-    def add_neighbor(self, address):
+    def add_peer(self, address):
         """
-        Adds a new node to the list of neighbors
+        Adds a new node to the list of peers
 
-        :param address: <str> address of the new neighbor
+        :param address: <str> address of the new peer
         """
         url = urlparse(address)
         if url.netloc:
-            self.neighbors.add(url.netloc)
+            self.peers.add(url.netloc)
         elif url.path:
-            self.neighbors.add(url.path)
+            self.peers.add(url.path)
         else:
-            raise ValueError('Malformed URL neighbor')
+            raise ValueError('Malformed URL peer')
 
     def is_valid_chain(self, chain):
         """
@@ -95,13 +95,13 @@ class Blockchain(object):
 
         :return: <bool> true if the chain is replaced, false otherwise
         """
-        curr_neighbors = self.neighbors
+        curr_peers = self.peers
         result = None
 
         min_length = len(self.chain)
 
-        for neighbor in curr_neighbors:
-            response = requests.get(f'http://{neighbor}/chain')
+        for peer in curr_peers:
+            response = requests.get(f'http://{peer}/chain')
 
             if response.status_code == 200:
                 length = response.json()['length']

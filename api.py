@@ -41,6 +41,11 @@ def mine():
 
     return jsonify(response), 201
 
+@api.route('/transactions/get', methods=['GET'])
+def get_transactions():
+    response = {'transactions': blockchain.current_transactions}
+    return jsonify(response), 200
+
 @api.route('/transactions/new', methods=['POST'])
 def new_transaction():
     body = request.get_json()
@@ -66,7 +71,7 @@ def new_transaction():
         return jsonify(response), 201
 
 @api.route('/chain', methods=['GET'])
-def chain():
+def get_chain():
     chain = []
     for block in blockchain.chain:
         chain.append(block.to_dict())
@@ -76,27 +81,31 @@ def chain():
     }
     return jsonify(response), 200
 
-@api.route('/neighbors/register', methods=['POST'])
-def register_neighbors():
+@api.route('/peers/get', methods=['GET'])
+def get_peers():
+    return jsonify(list(blockchain.peers)), 200
+
+@api.route('/peers/register', methods=['POST'])
+def register_peers():
     body = request.get_json()
 
     try:
-        neighbors = body['neighbors']
-        if neighbors is None:
-            return 'Missing valid list of neighbors', 400
+        peers = body['peers']
+        if peers is None:
+            return 'Missing valid list of peers', 400
     except TypeError:
-        return 'Missing valid list of neighbors', 400
+        return 'Missing valid list of peers', 400
 
-    for neighbor in neighbors:
-        blockchain.add_neighbor(neighbor)
+    for peer in peers:
+        blockchain.add_peer(peer)
 
     response = {
-        'message': 'New neighbors have been added',
-        'total_neighbors': list(blockchain.neighbors)
+        'message': 'New peers have been added',
+        'total_peers': list(blockchain.peers)
     }
     return jsonify(response), 201
 
-@api.route('/neighbors/resolve', methods=['GET'])
+@api.route('/peers/resolve', methods=['GET'])
 def reach_consensus():
     is_chain_replaced = blockchain.resolve()
     chain = []
