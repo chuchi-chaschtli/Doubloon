@@ -27,7 +27,7 @@ class Blockchain(object):
             len(self.chain) + 1, 
             self.current_transactions, 
             proof, 
-            prev_hash or self.chain[-1].hash)
+            prev_hash or self.last_block.hash)
 
         self.current_transactions = []
 
@@ -49,7 +49,7 @@ class Blockchain(object):
         if sender == constant.MINER_KEY or transaction.verify_signature(
             signature):
             self.current_transactions.append(transaction.dict)
-            return self.last_block.index + 1
+            return len(self.chain) + 1
 
         return -1
 
