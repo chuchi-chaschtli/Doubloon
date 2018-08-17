@@ -3,7 +3,7 @@ from unittest import TestCase
 import json
 import hashlib
 
-from block import Block
+from src.block import Block
 
 class BlockTests(TestCase):
     def setUp(self):
