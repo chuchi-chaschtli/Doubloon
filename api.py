@@ -83,7 +83,10 @@ def get_chain():
 
 @api.route('/peers/get', methods=['GET'])
 def get_peers():
-    return jsonify(list(blockchain.peers)), 200
+    response = {
+        'peers': list(blockchain.peers)
+    }
+    return jsonify(response), 200
 
 @api.route('/peers/register', methods=['POST'])
 def register_peers():
