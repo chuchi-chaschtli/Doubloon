@@ -63,9 +63,8 @@ class Blockchain(object):
         url = urlparse(address)
         if url.netloc:
             self.peers.add(url.netloc)
-        else:
-            return False
-        return True
+            return True
+        return False
 
     def resolve(self):
         """
