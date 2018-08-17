@@ -67,28 +67,6 @@ class Blockchain(object):
         else:
             raise ValueError('Malformed URL peer')
 
-    def is_valid_chain(self, chain):
-        """
-        Determines a given blockchain is valid
-
-        :param chain: <list> a blockchain
-        :return: <bool> true if valid, false otherwise
-        """
-        block_ptr = chain[0]
-        current_index = 1
-        while current_index < len(chain):
-            curr_block = chain[current_index]
-
-            if curr_block.prev_hash != block_ptr.hash:
-                return False
-            
-            if self.is_valid_proof(block_ptr.proof, curr_block.proof):
-                return False
-
-            block_ptr = curr_block
-            current_index += 1
-        return True
-
     def resolve(self):
         """
         Replaces chain with longest one in the network.
@@ -108,7 +86,7 @@ class Blockchain(object):
                 length = response.json()['length']
                 chain = response.json()['chain']
 
-                if length > min_length and self.is_valid_chain(chain):
+                if length > min_length and self.__is_valid_chain(chain):
                     min_length = length
                     result = chain
 
@@ -127,12 +105,39 @@ class Blockchain(object):
         :return: <int> the current proof
         """
         nonce = 0
-        while not self.is_valid_proof(prev, nonce):
+        while not self.__is_valid_proof(prev, nonce):
             nonce += 1
         return nonce
 
+    @property
+    def last_block(self):
+        return self.chain[-1]
+
     @staticmethod
-    def is_valid_proof(prev, nonce):
+    def __is_valid_chain(self, chain):
+        """
+        Determines a given blockchain is valid
+
+        :param chain: <list> a blockchain
+        :return: <bool> true if valid, false otherwise
+        """
+        block_ptr = chain[0]
+        current_index = 1
+        while current_index < len(chain):
+            curr_block = chain[current_index]
+
+            if curr_block.prev_hash != block_ptr.hash:
+                return False
+            
+            if self.__is_valid_proof(block_ptr.proof, curr_block.proof):
+                return False
+
+            block_ptr = curr_block
+            current_index += 1
+        return True
+
+    @staticmethod
+    def __is_valid_proof(prev, nonce):
         """
         Validates a proof by checking if the hash of the previous and the 
         current contain 4 trailing zeros
@@ -144,7 +149,3 @@ class Blockchain(object):
         guess = f'{prev}{nonce}'.encode()
         hash_guess = hashlib.sha256(guess).hexdigest()
         return hash_guess[-4:] == '0000'
-
-    @property
-    def last_block(self):
-        return self.chain[-1]
