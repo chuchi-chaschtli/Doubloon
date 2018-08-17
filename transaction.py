@@ -19,17 +19,20 @@ class Transaction(object):
         :param signature: <str> signature to verify
         :return: <bool> true if the verification succeeds, false otherwise
         """
-        private_key = RSA.importKey(unhexlify(signature))
-        public_key = RSA.importKey(unhexlify(self.sender))
+        try:
+            private_key = RSA.importKey(unhexlify(signature))
+            public_key = RSA.importKey(unhexlify(self.sender))
 
-        signer = PKCS1_v1_5.new(private_key)
-        verifier = PKCS1_v1_5.new(public_key)
+            signer = PKCS1_v1_5.new(private_key)
+            verifier = PKCS1_v1_5.new(public_key)
 
-        digest = SHA256.new()
-        digest.update(str(self.dict).encode('utf8'))
-        sig = signer.sign(digest)
+            digest = SHA256.new()
+            digest.update(str(self.dict).encode('utf8'))
+            sig = signer.sign(digest)
 
-        return verifier.verify(digest, sig)
+            return verifier.verify(digest, sig)
+        except TypeError:
+            return False
 
     @property
     def dict(self):

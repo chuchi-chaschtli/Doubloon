@@ -58,6 +58,7 @@ class Blockchain(object):
         Adds a new node to the list of peers
 
         :param address: <str> address of the new peer
+        :return: false if url is malformed, true if succeeded
         """
         url = urlparse(address)
         if url.netloc:
@@ -65,7 +66,8 @@ class Blockchain(object):
         elif url.path:
             self.peers.add(url.path)
         else:
-            raise ValueError('Malformed URL peer')
+            return False
+        return True
 
     def resolve(self):
         """

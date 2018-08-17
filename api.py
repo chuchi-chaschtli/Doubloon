@@ -91,6 +91,7 @@ def get_peers():
 @api.route('/peers/register', methods=['POST'])
 def register_peers():
     body = request.get_json()
+    original_size = len(blockchain.peers)
 
     try:
         peers = body['peers']
@@ -99,14 +100,25 @@ def register_peers():
     except TypeError:
         return 'Missing valid list of peers', 400
 
+    malformed_count = 0
     for peer in peers:
-        blockchain.add_peer(peer)
+        if not blockchain.add_peer(peer):
+            malformed_count += 1
 
+    message = ''
+    status_code = 200
+    if malformed_count > 0:
+        message = 'Some peers were malformed'
+    elif original_size == len(blockchain.peers):
+        message = 'No new peers added'
+    else:
+        message = 'New peers have been added'
+        status_code = 201
     response = {
-        'message': 'New peers have been added',
+        'message': message,
         'total_peers': list(blockchain.peers)
     }
-    return jsonify(response), 201
+    return jsonify(response), status_code
 
 @api.route('/peers/resolve', methods=['GET'])
 def reach_consensus():
