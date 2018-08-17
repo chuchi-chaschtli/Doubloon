@@ -63,8 +63,6 @@ class Blockchain(object):
         url = urlparse(address)
         if url.netloc:
             self.peers.add(url.netloc)
-        elif url.path:
-            self.peers.add(url.path)
         else:
             return False
         return True
@@ -97,6 +95,10 @@ class Blockchain(object):
             return True
         return False
 
+    @property
+    def last_block(self):
+        return self.chain[-1]
+
     def proof_of_work(self, prev):
         """
         Simple proof of work algorithm:
@@ -111,12 +113,8 @@ class Blockchain(object):
             nonce += 1
         return nonce
 
-    @property
-    def last_block(self):
-        return self.chain[-1]
-
     @staticmethod
-    def __is_valid_chain(self, chain):
+    def __is_valid_chain(chain):
         """
         Determines a given blockchain is valid
 
@@ -131,7 +129,7 @@ class Blockchain(object):
             if curr_block.prev_hash != block_ptr.hash:
                 return False
             
-            if self.__is_valid_proof(block_ptr.proof, curr_block.proof):
+            if __is_valid_proof(block_ptr.proof, curr_block.proof):
                 return False
 
             block_ptr = curr_block
