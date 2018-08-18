@@ -100,15 +100,12 @@ def register_peers():
     except TypeError:
         return 'Missing valid list of peers', 400
 
-    malformed_count = 0
-    for peer in peers:
-        if not blockchain.add_peer(peer):
-            malformed_count += 1
+    any_malformed = any(not blockchain.add_peer(peer) for peer in peers)
 
     message = ''
     status_code = 200
-    if malformed_count > 0:
-        message = 'Some peers were malformed'
+    if any_malformed:
+        message = 'Some given peers were malformed'
     elif original_size == len(blockchain.peers):
         message = 'No new peers added'
     else:
