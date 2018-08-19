@@ -10,13 +10,13 @@ import blockchain
 import constant
 
 # Node instantiation
-api = Flask(__name__)
-node_uid = str(uuid4()).replace('-', '')
+app = Flask(__name__)
+node_address = str(uuid4()).replace('-', '')
 
 # Blockchain instantiation
 blockchain = blockchain.Blockchain()
 
-@api.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['GET'])
 def mine():
     last_blk = blockchain.last_block
     last_proof = last_blk.proof
@@ -24,7 +24,7 @@ def mine():
 
     blockchain.add_transaction(
         constant.MINER_KEY, 
-        node_uid, 
+        node_address, 
         constant.MINER_REWARD, 
         "")
 
@@ -41,12 +41,12 @@ def mine():
 
     return jsonify(response), 201
 
-@api.route('/transactions/get', methods=['GET'])
+@app.route('/transactions/get', methods=['GET'])
 def get_transactions():
     response = {'transactions': blockchain.current_transactions}
     return jsonify(response), 200
 
-@api.route('/transactions/new', methods=['POST'])
+@app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     body = request.get_json()
     required_params = ['sender', 'receiver', 'amount', 'signature']
@@ -70,7 +70,7 @@ def new_transaction():
                     f'Transaction will be appended to block {result}'}
         return jsonify(response), 201
 
-@api.route('/chain', methods=['GET'])
+@app.route('/chain', methods=['GET'])
 def get_chain():
     chain = []
     for block in blockchain.chain:
@@ -81,14 +81,32 @@ def get_chain():
     }
     return jsonify(response), 200
 
-@api.route('/peers/get', methods=['GET'])
+@app.route('/chain/resolve', methods=['GET'])
+def consensus():
+    is_chain_replaced = blockchain.resolve()
+    chain = []
+    for block in blockchain.chain:
+        chain.append(block.dict)
+
+    response = {
+        'message': '',
+        'chain': chain
+    }
+
+    if is_chain_replaced:
+        response['message'] = 'Chain has been replaced!'
+    else:
+        response['message'] = 'Chain is authoritative'
+    return jsonify(response), 200
+
+@app.route('/peers/get', methods=['GET'])
 def get_peers():
     response = {
         'peers': list(blockchain.peers)
     }
     return jsonify(response), 200
 
-@api.route('/peers/register', methods=['POST'])
+@app.route('/peers/register', methods=['POST'])
 def register_peers():
     body = request.get_json()
     original_size = len(blockchain.peers)
@@ -117,24 +135,7 @@ def register_peers():
     }
     return jsonify(response), status_code
 
-@api.route('/peers/resolve', methods=['GET'])
-def reach_consensus():
-    is_chain_replaced = blockchain.resolve()
-    chain = []
-    for block in blockchain.chain:
-        chain.append(block.dict)
-
-    response = {
-        'chain': chain
-    }
-
-    if is_chain_replaced:
-        response['message'] = 'Chain has been replaced!'
-    else:
-        response['message'] = 'Chain is authoritative'
-    return jsonify(response), 200
-
-@api.route('/wallet/new', methods=['GET'])
+@app.route('/wallet/new', methods=['GET'])
 def new_wallet():
     rng = Crypto.Random.new().read
     priv_key = RSA.generate(1024, rng)
@@ -153,12 +154,16 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description='Blockchain command line')
     parser.add_argument(
+        '-H', 
+        '--host', 
+        default='127.0.0.1', 
+        help='host to run service')
+    parser.add_argument(
         '-p', 
         '--port', 
         default=8081, 
         type=int, 
         help='port to run service')
     args = parser.parse_args()
-    port = args.port
 
-    api.run(host='0.0.0.0', port=port)
+    app.run(host=args.host, port=args.port)

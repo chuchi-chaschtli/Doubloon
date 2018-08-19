@@ -73,12 +73,11 @@ class Blockchain(object):
         :return: <bool> true if the current chain is replaced, false if the 
         chain is authoritative
         """
-        curr_peers = self.peers
         result = None
 
         min_length = len(self.chain)
 
-        for peer in curr_peers:
+        for peer in self.peers:
             response = requests.get(f'http://{peer}/chain')
 
             if response.status_code == 200:
@@ -94,10 +93,6 @@ class Blockchain(object):
             return True
         return False
 
-    @property
-    def last_block(self):
-        return self.chain[-1]
-
     def proof_of_work(self, prev):
         """
         Simple proof of work algorithm:
@@ -111,6 +106,10 @@ class Blockchain(object):
         while not self.__is_valid_proof(prev, nonce):
             nonce += 1
         return nonce
+
+    @property
+    def last_block(self):
+        return self.chain[-1]
 
     @staticmethod
     def __is_valid_chain(chain):
