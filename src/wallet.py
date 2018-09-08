@@ -27,7 +27,7 @@ class Wallet(object):
         """
         Grabs the decoded RSA key.
 
-        :param key: <key> the RSA key
+        :param key: <RSAobj> the RSA key
         :return: <str> the decoded hexlified string.
         """
         return hexlify(key.exportKey(format='DER')).decode()
