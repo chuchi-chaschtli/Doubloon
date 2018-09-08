@@ -1,11 +1,8 @@
 from uuid import uuid4
 from flask import Flask, jsonify, request
 
-import Crypto.Random
-from Crypto.PublicKey import RSA
-from binascii import hexlify
-
 import blockchain
+import wallet
 import constant
 
 # Node instantiation
@@ -136,15 +133,12 @@ def register_peers():
 
 @app.route('/wallet/new', methods=['GET'])
 def new_wallet():
-    rng = Crypto.Random.new().read
-    priv_key = RSA.generate(1024, rng)
-    publ_key = priv_key.publickey()
+    wallet_dict = wallet.Wallet(uuid4()).dict
+
     response = {
-        'message': 'Notice: Save these keys!!!',
-        'private_key': hexlify(priv_key.exportKey(format='DER')).decode(
-            'utf8'),
-        'public_key': hexlify(publ_key.exportKey(format='DER')).decode(
-            'utf8')
+        'notice': 'Remember to save your keys in a secure location!',
+        'private_key': wallet_dict['private_key'],
+        'public_key': wallet_dict['public_key']
     }
     return jsonify(response), 201
 
