@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description='Blockchain command line')
     parser.add_argument(
-        '-H', 
+        '-host', 
         '--host', 
         default='127.0.0.1', 
         help='host to run service')
