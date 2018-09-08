@@ -11,7 +11,7 @@ Usage is fairly straightforward.
 * Clone the project
 * From the project dir, simply run\
 `python3 src/app.py`
-    * You can specify the host and port with which to run the app on using `-H [url]` and `-p [port]`, respectively.
+    * You can choose to specify the host and port with which to run the app on using `-host [url]` and `-p [port]`, respectively.
 * To run the unit tests, simply run\
 `python3 tests/tester.py`
 
