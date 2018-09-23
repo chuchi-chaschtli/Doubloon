@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import Crypto.Random
+from Crypto import Random
 from Crypto.PublicKey import RSA
 from binascii import hexlify
 
@@ -30,7 +30,7 @@ class TransactionTests(TestCase):
         self.assertTrue(self.transaction.verify_signature(PRIVATE_KEY))
 
     def test_verify_sig_fails(self):
-        rng = Crypto.Random.new().read
+        rng = Random.new().read
         priv_key = RSA.generate(1024, rng)
         rand_private_key = hexlify(priv_key.exportKey(format='DER')).decode(
             'utf8')

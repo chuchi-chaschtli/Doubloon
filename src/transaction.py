@@ -1,9 +1,8 @@
 from binascii import unhexlify
 
-import Crypto
 from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
+from Crypto.PublicKey.RSA import importKey
+from Crypto.Signature.PKCS1_v1_5 import new
 
 class Transaction(object):
     def __init__(self, sender, receiver, amount):
@@ -20,11 +19,11 @@ class Transaction(object):
         :return: <bool> true if the verification succeeds, false otherwise
         """
         try:
-            private_key = RSA.importKey(unhexlify(signature))
-            public_key = RSA.importKey(unhexlify(self.sender))
+            private_key = importKey(unhexlify(signature))
+            public_key = importKey(unhexlify(self.sender))
 
-            signer = PKCS1_v1_5.new(private_key)
-            verifier = PKCS1_v1_5.new(public_key)
+            signer = new(private_key)
+            verifier = new(public_key)
 
             digest = SHA256.new()
             digest.update(str(self.dict).encode('utf8'))

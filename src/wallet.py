@@ -1,13 +1,13 @@
-import Crypto.Random
-from Crypto.PublicKey import RSA
+from Crypto import Random
+from Crypto.PublicKey.RSA import generate
 from binascii import hexlify
 
 class Wallet(object):
     def __init__(self, id):
         self.id = id
 
-        rng = Crypto.Random.new().read
-        self.pri_key = RSA.generate(1024, rng)
+        rng = Random.new().read
+        self.pri_key = generate(1024, rng)
         self.pub_key = self.pri_key.publickey()
 
     @property
